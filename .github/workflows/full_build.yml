@@ -1,0 +1,59 @@
+name: Test Full Build Linux
+
+on:
+  push:
+    branches-ignore:
+      - 'doc*'
+      - 'wip*'
+  pull_request:
+    branches:
+      - '*'
+
+
+# env:
+#   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+
+
+jobs:
+  armv7_job:
+    # The host should always be Linux
+    runs-on: ubuntu-18.04
+    name: Build on ubuntu-18.04 armv7
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - uses: uraimo/run-on-arch-action@v2.0.5
+      - name: Install python
+          run: |
+          python3 --version;
+          sudo pip3 install virtualenv;
+          virtualenv --python=python3 env;
+          source env/bin/activate;
+          which python;
+
+      - name: Check versions
+        id: runcmd
+        with:
+          arch: armv7
+          distro: ubuntu18.04
+
+          # Not required, but speeds up builds by storing container images in
+          # a GitHub package registry.
+          githubToken: ${{ github.token }}
+
+          # Set an output parameter `uname` for use in subsequent steps
+          run: |
+            python --version
+            pip install jinja2
+
+      - name: Run tests
+        # Echo the `uname` output parameter from the `runcmd` step
+        run: |
+          python tester.py testset_travis_blasfeo_pm_double_amd64.json
+          python tester.py testset_travis_blasfeo_pm_single_amd64.json
+          python tester.py testset_travis_blasfeo_cm_double_amd64.json
+          python tester.py testset_travis_blasfeo_cm_double_amd64_packalg.json
+          python tester.py testset_travis_blasfeo_cm_single_amd64.json
+          python tester.py testset_travis_blas_pm_double_amd64.json
+          python tester.py testset_travis_blas_pm_single_amd64.json
+          python tester.py testset_travis_blas_cm_double_amd64.json
+          python tester.py testset_travis_blas_cm_single_amd64.json
